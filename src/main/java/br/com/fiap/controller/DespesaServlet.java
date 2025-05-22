@@ -86,8 +86,8 @@ public class DespesaServlet extends HttpServlet {
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
         despesa.setDataPagamento(new Date(System.currentTimeMillis())); // Data atual
 
-        if (request.getParameter("data") != null) {
-            despesa.setVencimento(new Date(sdf.parse(request.getParameter("data")).getTime()));
+        if (request.getParameter("data do vencimento") != null) {
+            despesa.setVencimento(new Date(sdf.parse(request.getParameter("data do vencimento")).getTime()));
         } else {
             throw new ServletException("Data de vencimento não informada");
         }
@@ -141,7 +141,7 @@ public class DespesaServlet extends HttpServlet {
 
         request.setAttribute("listaDespesas", resultado);
         request.setAttribute("totalDespesas", total);
-        request.getRequestDispatcher("despesa.jsp").forward(request, response);
+        request.getRequestDispatcher("/despesa.jsp").forward(request, response);
     }
 
     private void handleError(HttpServletRequest request, HttpServletResponse response, Exception e)
@@ -167,4 +167,3 @@ public class DespesaServlet extends HttpServlet {
         }
     }
 }
-
