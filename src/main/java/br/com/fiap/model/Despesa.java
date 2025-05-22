@@ -1,6 +1,9 @@
 package br.com.fiap.model;
 
 import java.math.BigDecimal;
+import java.text.SimpleDateFormat;
+import java.math.BigDecimal;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 
 public class Despesa {
@@ -108,23 +111,31 @@ public class Despesa {
     }
 
     // Métodos auxiliares para o JSP
-    public String getNome() {
-        return this.descricao;
-    }
-
-    public String getCategoria() {
-        return this.categoriaDespesa;
-    }
-
-    public String getStatus() {
-        return this.statusDespesa;
-    }
-
-    public String getData() {
-        return new java.text.SimpleDateFormat("dd/MM/yyyy").format(this.dataPagamento);
+    public String getDataPagamentoFormatada() {
+        if (dataPagamento != null) {
+            return new SimpleDateFormat("dd/MM/yyyy").format(dataPagamento);
+        } else {
+            return "";
+        }
     }
 
     public String getVencimentoFormatado() {
-        return new java.text.SimpleDateFormat("dd/MM/yyyy").format(this.vencimento);
+        if (vencimento != null) {
+            return new SimpleDateFormat("dd/MM/yyyy").format(vencimento);
+        } else {
+            return "";
+        }
+    }
+
+    public String getRecorrenteFormatado() {
+        return recorrente == 'S' ? "Sim" : "Não";
+    }
+
+    public String getCategoria() {
+        return categoriaDespesa;
+    }
+
+    public String getStatus() {
+        return statusDespesa;
     }
 }

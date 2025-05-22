@@ -12,17 +12,53 @@
     <meta charset="UTF-8">
     <title>Fintech - Controle de Despesas</title>
     <link rel="stylesheet" href="resources/css/bootstrap.css">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter&display=swap" rel="stylesheet">
+
     <style>
         body {
+            font-family: 'Inter', sans-serif;
             background-color: #f4f6f9;
         }
+
         .fintech-card {
             border-radius: 16px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
             background: white;
+            transition: transform 0.2s ease;
+        }
+
+        .fintech-card:hover {
+            transform: translateY(-4px);
+        }
+
+        .btn-primary {
+            background-color: #1E88E5;
+            border: none;
+        }
+
+        .btn-secondary {
+            background-color: #43A047;
+            border: none;
+        }
+
+        .btn-warning {
+            background-color: #FFB300;
+            border: none;
+        }
+
+        .btn-danger {
+            background-color: #E53935;
+            border: none;
+        }
+
+        h2 {
+            font-weight: bold;
+            color: #333;
         }
     </style>
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+
 </head>
 <body>
 
@@ -45,7 +81,7 @@
         <form action="despesa?action=inserir" method="post" class="row g-3">
             <div class="col-md-4">
                 <label>Nova Despesa</label>
-                <input type="text" name="descricao" class="form-control" placeholder="Descrição" required>
+                <input type="text" name="nome" class="form-control" placeholder="Descrição" required>
             </div>
             <div class="col-md-3">
                 <label>Valor da Despesa</label>
@@ -54,11 +90,11 @@
 
             <div class="col-md-3">
                 <label>Data do Pagamento</label>
-                <input type="date" name="data do pagamento" class="form-control" placeholder="Data do Pagamento" required>
+                <input type="date" name="data" class="form-control" placeholder="Data do Pagamento" required>
             </div>
             <div class="col-md-2">
                 <label>Data do Vencimento</label>
-                <input type="date" name="data do vencimento" class="form-control" placeholder="Data do Vencimento">
+                <input type="date" name="vencimento" class="form-control" placeholder="Data do Vencimento">
             </div>
 
             <div class="col-md-4">
@@ -98,8 +134,8 @@
                 <label>Recorrente?</label>
                 <select name="recorrente" class="form-select" required>
                     <option value="">Recorrente?</option>
-                    <option value="S">Sim</option>
-                    <option value="N">Não</option>
+                    <option value="S">SIM</option>
+                    <option value="N">NAO</option>
                 </select>
             </div>
 
@@ -140,18 +176,22 @@
             <tbody>
             <c:forEach var="despesa" items="${listaDespesas}">
                 <tr>
-                    <td>${despesa.nome}</td>
+                    <td>${despesa.descricao}</td>
                     <td>R$ ${despesa.valor}</td>
-                    <td>${despesa.data}</td>
-                    <td>${despesa.vencimento}</td>
+                    <td>${despesa.dataPagamentoFormatada}</td>
+                    <td>${despesa.vencimentoFormatado}</td>
                     <td>${despesa.categoria}</td>
                     <td>${despesa.formaPagamento}</td>
                     <td>${despesa.status}</td>
-                    <td>${despesa.recorrente}</td>
+                    <td>${despesa.recorrenteFormatado}</td>
                     <td>
                         <div class="btn-group" role="group">
-                            <a href="editarDespesa?id=${despesa.id}" class="btn btn-warning btn-sm">Atualizar</a>
-                            <a href="removerDespesa?id=${despesa.id}" class="btn btn-danger btn-sm">Remover</a>
+                            <a href="editarDespesa?id=${despesa.idDespesa}" class="btn btn-warning btn-sm">
+                                <i class="bi bi-pencil"></i> Atualizar
+                            </a>
+                            <a href="removerDespesa?id=${despesa.idDespesa}" class="btn btn-danger btn-sm">
+                                <i class="bi bi-trash"></i> Remover
+                            </a>
                         </div>
                     </td>
                 </tr>

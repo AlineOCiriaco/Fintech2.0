@@ -75,19 +75,24 @@ public class DespesaServlet extends HttpServlet {
     private void cadastrar(HttpServletRequest request, HttpServletResponse response)
             throws IOException, ServletException, SQLException, ParseException {
 
-        if (request.getParameter("descricao") == null || request.getParameter("valor") == null) {
+        if (request.getParameter("nome") == null || request.getParameter("valor") == null) {
             throw new ServletException("Parâmetros obrigatórios não informados");
         }
 
         Despesa despesa = new Despesa();
-        despesa.setDescricao(request.getParameter("descricao"));
+        despesa.setDescricao(request.getParameter("nome"));
         despesa.setValor(new BigDecimal(request.getParameter("valor")));
 
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
-        despesa.setDataPagamento(new Date(System.currentTimeMillis())); // Data atual
 
-        if (request.getParameter("data do vencimento") != null) {
-            despesa.setVencimento(new Date(sdf.parse(request.getParameter("data do vencimento")).getTime()));
+        if (request.getParameter("data") != null && !request.getParameter("data").isEmpty()) {
+            despesa.setDataPagamento(sdf.parse(request.getParameter("data")));
+        } else {
+            despesa.setDataPagamento(new Date(System.currentTimeMillis())); // fallback
+        }
+
+        if (request.getParameter("vencimento") != null && !request.getParameter("vencimento").isEmpty()) {
+            despesa.setVencimento(sdf.parse(request.getParameter("vencimento")));
         } else {
             throw new ServletException("Data de vencimento não informada");
         }
@@ -99,13 +104,11 @@ public class DespesaServlet extends HttpServlet {
         if (request.getParameter("recorrente") != null && !request.getParameter("recorrente").isEmpty()) {
             despesa.setRecorrente(request.getParameter("recorrente").charAt(0));
         } else {
-            throw new ServletException("Campo 'recorrente' não informado");
+            despesa.setRecorrente('N');  // valor padrão
         }
 
-        despesa.setUsuarioId(1);
-        despesa.setContaId(1);
-
         despesaDao.inserir(despesa);
+
         response.sendRedirect("despesa");
     }
 
@@ -121,7 +124,7 @@ public class DespesaServlet extends HttpServlet {
 
     private void remover(HttpServletRequest request, HttpServletResponse response)
             throws IOException, ServletException, SQLException {
-        String descricao = request.getParameter("descricao");
+        String descricao = request.getParameter("nome");
         if (descricao == null || descricao.trim().isEmpty()) {
             throw new ServletException("Descrição não informada");
         }

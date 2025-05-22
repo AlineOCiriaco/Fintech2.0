@@ -17,8 +17,8 @@ public class DespesaDao {
 
     public void inserir(Despesa despesa) throws SQLException {
         String sql = "INSERT INTO DESPESA (ID_DESPESA, VALOR, DATA_PAGAMENTO, VENCIMENTO, DESCRICAO, " +
-                "CATEGORIA_DESPESA, FORMA_PAGAMENTO, STATUS_DESPESA, RECORRENTE, USUARIO_ID_USUARIO, CONTA_ID_CONTA) " +
-                "VALUES (seq_despesa.nextval, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                "CATEGORIA_DESPESA, STATUS_DESPESA, RECORRENTE, USUARIO_ID_USUARIO, CONTA_ID_CONTA) " +
+                "VALUES (seq_despesa.nextval, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
         try (PreparedStatement stm = conexao.prepareStatement(sql)) {
             stm.setBigDecimal(1, despesa.getValor());
@@ -26,11 +26,11 @@ public class DespesaDao {
             stm.setDate(3, new Date(despesa.getVencimento().getTime()));
             stm.setString(4, despesa.getDescricao());
             stm.setString(5, despesa.getCategoriaDespesa());
-            stm.setString(6, despesa.getFormaPagamento());
-            stm.setString(7, despesa.getStatusDespesa());
-            stm.setString(8, String.valueOf(despesa.getRecorrente()));
-            stm.setInt(9, despesa.getUsuarioId());
-            stm.setInt(10, despesa.getContaId());
+            String status = despesa.getStatusDespesa().toUpperCase().trim();
+            stm.setString(6, status);
+            stm.setString(7, String.valueOf(despesa.getRecorrente()));
+            stm.setInt(8, despesa.getUsuarioId());
+            stm.setInt(9, despesa.getContaId());
 
             stm.executeUpdate();
         }
@@ -95,7 +95,10 @@ public class DespesaDao {
         despesa.setCategoriaDespesa(result.getString("CATEGORIA_DESPESA"));
         despesa.setFormaPagamento(result.getString("FORMA_PAGAMENTO"));
         despesa.setStatusDespesa(result.getString("STATUS_DESPESA"));
-        despesa.setRecorrente(result.getString("RECORRENTE").charAt(0));
+
+        String recorrenteStr = result.getString("RECORRENTE");
+        despesa.setRecorrente(recorrenteStr != null && !recorrenteStr.isEmpty() ? recorrenteStr.charAt(0) : 'N'); // Ajuste seguro
+
         despesa.setUsuarioId(result.getInt("USUARIO_ID_USUARIO"));
         despesa.setContaId(result.getInt("CONTA_ID_CONTA"));
         return despesa;
