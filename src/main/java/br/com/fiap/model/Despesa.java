@@ -2,8 +2,7 @@ package br.com.fiap.model;
 
 import java.math.BigDecimal;
 import java.text.SimpleDateFormat;
-import java.math.BigDecimal;
-import java.text.SimpleDateFormat;
+import java.time.LocalDate;
 import java.util.Date;
 
 public class Despesa {
@@ -137,5 +136,11 @@ public class Despesa {
 
     public String getStatus() {
         return statusDespesa;
+    }
+
+    public void setId(int id) {
+    }
+
+    public void setData(LocalDate data) {
     }
 }

@@ -62,6 +62,8 @@
 </head>
 <body>
 
+<%@include file="header.jsp"%>
+
 <div class="container mt-5">
 
     <h2 class="mb-3 text-center">Bem-vindo ao sistema de gerenciamento de despesas!</h2>
@@ -171,36 +173,91 @@
                 <th>Forma</th>
                 <th>Status</th>
                 <th>Recorrente</th>
+                <th>Ações</th>
             </tr>
             </thead>
             <tbody>
             <c:forEach var="despesa" items="${listaDespesas}">
-                <tr>
-                    <td>${despesa.descricao}</td>
-                    <td>R$ ${despesa.valor}</td>
-                    <td>${despesa.dataPagamentoFormatada}</td>
-                    <td>${despesa.vencimentoFormatado}</td>
-                    <td>${despesa.categoria}</td>
-                    <td>${despesa.formaPagamento}</td>
-                    <td>${despesa.status}</td>
-                    <td>${despesa.recorrenteFormatado}</td>
-                    <td>
-                        <div class="btn-group" role="group">
-                            <a href="editarDespesa?id=${despesa.idDespesa}" class="btn btn-warning btn-sm">
-                                <i class="bi bi-pencil"></i> Atualizar
-                            </a>
-                            <a href="removerDespesa?id=${despesa.idDespesa}" class="btn btn-danger btn-sm">
-                                <i class="bi bi-trash"></i> Remover
-                            </a>
-                        </div>
-                    </td>
-                </tr>
+                <c:choose>
+                    <c:when test="${despesa.idDespesa == param.idEditar}">
+                        <!-- Linha em modo edição -->
+                        <tr>
+                            <form action="despesa?action=atualizar" method="post">
+                                <input type="hidden" name="idDespesa" value="${despesa.idDespesa}" />
+                                <td><input type="text" name="nome" value="${despesa.descricao}" class="form-control" required></td>
+                                <td><input type="number" step="0.01" name="valor" value="${despesa.valor}" class="form-control" required></td>
+                                <td><input type="date" name="data" value="${despesa.dataPagamentoFormatada}" class="form-control" required></td>
+                                <td><input type="date" name="vencimento" value="${despesa.vencimentoFormatado}" class="form-control"></td>
+                                <td>
+                                    <select name="categoria" class="form-select" required>
+                                        <option value="Alimentação" ${despesa.categoria == 'Alimentação' ? 'selected' : ''}>Alimentação</option>
+                                        <option value="Transporte" ${despesa.categoria == 'Transporte' ? 'selected' : ''}>Transporte</option>
+                                        <option value="Lazer" ${despesa.categoria == 'Lazer' ? 'selected' : ''}>Lazer</option>
+                                        <option value="Educação" ${despesa.categoria == 'Educação' ? 'selected' : ''}>Educação</option>
+                                        <option value="Investimento" ${despesa.categoria == 'Investimento' ? 'selected' : ''}>Investimento</option>
+                                        <option value="Saúde" ${despesa.categoria == 'Saúde' ? 'selected' : ''}>Saúde</option>
+                                        <option value="Moradia" ${despesa.categoria == 'Moradia' ? 'selected' : ''}>Moradia</option>
+                                        <option value="Outros" ${despesa.categoria == 'Outros' ? 'selected' : ''}>Outros</option>
+                                    </select>
+                                </td>
+                                <td>
+                                    <select name="formaPagamento" class="form-select" required>
+                                        <option value="Cartão" ${despesa.formaPagamento == 'Cartão' ? 'selected' : ''}>Cartão</option>
+                                        <option value="Dinheiro" ${despesa.formaPagamento == 'Dinheiro' ? 'selected' : ''}>Dinheiro</option>
+                                        <option value="PIX" ${despesa.formaPagamento == 'PIX' ? 'selected' : ''}>PIX</option>
+                                    </select>
+                                </td>
+                                <td>
+                                    <select name="status" class="form-select" required>
+                                        <option value="Pendente" ${despesa.status == 'Pendente' ? 'selected' : ''}>Pendente</option>
+                                        <option value="Pago" ${despesa.status == 'Pago' ? 'selected' : ''}>Pago</option>
+                                    </select>
+                                </td>
+                                <td>
+                                    <select name="recorrente" class="form-select" required>
+                                        <option value="S" ${despesa.recorrente == 'S' ? 'selected' : ''}>SIM</option>
+                                        <option value="N" ${despesa.recorrente == 'N' ? 'selected' : ''}>NÃO</option>
+                                    </select>
+                                </td>
+                                <td>
+                                    <button type="submit" class="btn btn-primary btn-sm">Salvar</button>
+                                    <a href="despesa?action=listar" class="btn btn-secondary btn-sm">Cancelar</a>
+                                </td>
+                            </form>
+                        </tr>
+                    </c:when>
+                    <c:otherwise>
+                        <!-- Linha normal, somente leitura -->
+                        <tr>
+                            <td>${despesa.descricao}</td>
+                            <td>R$ ${despesa.valor}</td>
+                            <td>${despesa.dataPagamentoFormatada}</td>
+                            <td>${despesa.vencimentoFormatado}</td>
+                            <td>${despesa.categoria}</td>
+                            <td>${despesa.formaPagamento}</td>
+                            <td>${despesa.status}</td>
+                            <td>${despesa.recorrenteFormatado}</td>
+                            <td>
+                                <div class="btn-group" role="group">
+                                    <a href="despesa?action=listar&idEditar=${despesa.idDespesa}" class="btn btn-warning btn-sm">
+                                        <i class="bi bi-pencil"></i> Editar
+                                    </a>
+                                    <a href="despesa?action=remover&id=${despesa.idDespesa}" class="btn btn-danger btn-sm"
+                                       onclick="return confirm('Tem certeza que deseja remover esta despesa?');">
+                                        <i class="bi bi-trash"></i> Remover
+                                    </a>
+                                </div>
+                            </td>
+                        </tr>
+                    </c:otherwise>
+                </c:choose>
             </c:forEach>
             </tbody>
+
         </table>
     </div>
 
 </div>
-
+<%@include file="footer.jsp"%>
 </body>
 </html>

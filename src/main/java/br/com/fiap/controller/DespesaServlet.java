@@ -16,6 +16,7 @@ import java.sql.SQLException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.List;
+import java.util.Map;
 
 @WebServlet(urlPatterns = {"/despesa"})
 public class DespesaServlet extends HttpServlet {
@@ -25,7 +26,6 @@ public class DespesaServlet extends HttpServlet {
     @Override
     public void init() throws ServletException {
         try {
-
             System.out.println("Registrando driver Oracle...");
             Class.forName("oracle.jdbc.driver.OracleDriver");
 
@@ -38,6 +38,7 @@ public class DespesaServlet extends HttpServlet {
         }
     }
 
+    @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
@@ -55,8 +56,12 @@ public class DespesaServlet extends HttpServlet {
                     case "pesquisar":
                         pesquisar(request, response);
                         break;
+                    case "atualizar":
+                        atualizar(request, response);
+                        break;
                     default:
                         listar(request, response);
+                        break;
                 }
             } else {
                 listar(request, response);
@@ -66,10 +71,23 @@ public class DespesaServlet extends HttpServlet {
         }
     }
 
+    @Override
     protected void doGet(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
-        doPost(request, response);
+        String action = request.getParameter("action");
+
+        try {
+            if ("remover".equals(action)) {
+                remover(request, response);
+            } else if ("atualizar".equals(action)) {
+                exibirFormularioAtualizacao(request, response);
+            } else {
+                listar(request, response);
+            }
+        } catch (Exception e) {
+            handleError(request, response, e);
+        }
     }
 
     private void cadastrar(HttpServletRequest request, HttpServletResponse response)
@@ -88,7 +106,7 @@ public class DespesaServlet extends HttpServlet {
         if (request.getParameter("data") != null && !request.getParameter("data").isEmpty()) {
             despesa.setDataPagamento(sdf.parse(request.getParameter("data")));
         } else {
-            despesa.setDataPagamento(new Date(System.currentTimeMillis())); // fallback
+            despesa.setDataPagamento(new Date(System.currentTimeMillis()));
         }
 
         if (request.getParameter("vencimento") != null && !request.getParameter("vencimento").isEmpty()) {
@@ -104,7 +122,7 @@ public class DespesaServlet extends HttpServlet {
         if (request.getParameter("recorrente") != null && !request.getParameter("recorrente").isEmpty()) {
             despesa.setRecorrente(request.getParameter("recorrente").charAt(0));
         } else {
-            despesa.setRecorrente('N');  // valor padrão
+            despesa.setRecorrente('N');
         }
 
         despesaDao.inserir(despesa);
@@ -112,28 +130,85 @@ public class DespesaServlet extends HttpServlet {
         response.sendRedirect("despesa");
     }
 
+    private void atualizar(HttpServletRequest request, HttpServletResponse response)
+            throws IOException, ServletException, SQLException, ParseException {
+
+        String idParam = request.getParameter("id");
+        if (idParam == null || idParam.trim().isEmpty()) {
+            throw new ServletException("ID não informado para atualização");
+        }
+
+        int id = Integer.parseInt(idParam);
+
+        Despesa despesa = new Despesa();
+        despesa.setIdDespesa(id);
+        despesa.setDescricao(request.getParameter("nome"));
+        despesa.setValor(new BigDecimal(request.getParameter("valor")));
+
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+
+        if (request.getParameter("data") != null && !request.getParameter("data").isEmpty()) {
+            despesa.setDataPagamento(sdf.parse(request.getParameter("data")));
+        } else {
+            despesa.setDataPagamento(new Date(System.currentTimeMillis()));
+        }
+
+        if (request.getParameter("vencimento") != null && !request.getParameter("vencimento").isEmpty()) {
+            despesa.setVencimento(sdf.parse(request.getParameter("vencimento")));
+        } else {
+            throw new ServletException("Data de vencimento não informada");
+        }
+
+        despesa.setCategoriaDespesa(request.getParameter("categoria"));
+        despesa.setFormaPagamento(request.getParameter("formaPagamento"));
+        despesa.setStatusDespesa(request.getParameter("status"));
+
+        if (request.getParameter("recorrente") != null && !request.getParameter("recorrente").isEmpty()) {
+            despesa.setRecorrente(request.getParameter("recorrente").charAt(0));
+        } else {
+            despesa.setRecorrente('N');
+        }
+
+        try {
+            despesaDao.atualizar(despesa);
+        } catch (EntidadeNaoEncontrada e) {
+            throw new RuntimeException(e);
+        }
+
+        response.sendRedirect("despesa");
+    }
+
     private void listar(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException, SQLException {
+
         List<Despesa> lista = despesaDao.listar();
         double total = despesaDao.calcularTotal();
+        Map<String, Double> totalPorCategoria = despesaDao.getTotalDespesasPorCategoria();
 
         request.setAttribute("listaDespesas", lista);
         request.setAttribute("totalDespesas", total);
+        request.setAttribute("totalPorCategoria", totalPorCategoria);
+
         request.getRequestDispatcher("despesa.jsp").forward(request, response);
     }
 
     private void remover(HttpServletRequest request, HttpServletResponse response)
             throws IOException, ServletException, SQLException {
-        String descricao = request.getParameter("nome");
-        if (descricao == null || descricao.trim().isEmpty()) {
-            throw new ServletException("Descrição não informada");
+
+        String idParam = request.getParameter("id");
+        if (idParam == null || idParam.trim().isEmpty()) {
+            throw new ServletException("ID não informado");
         }
-        despesaDao.removerPorDescricao(descricao);
+
+        int id = Integer.parseInt(idParam);
+        despesaDao.removerPorId(id);
+
         response.sendRedirect("despesa");
     }
 
     private void pesquisar(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException, SQLException, EntidadeNaoEncontrada {
+
         String termo = request.getParameter("termo");
         if (termo == null || termo.trim().isEmpty()) {
             throw new ServletException("Termo de pesquisa não informado");
@@ -144,11 +219,29 @@ public class DespesaServlet extends HttpServlet {
 
         request.setAttribute("listaDespesas", resultado);
         request.setAttribute("totalDespesas", total);
-        request.getRequestDispatcher("/despesa.jsp").forward(request, response);
+
+        request.getRequestDispatcher("despesa.jsp").forward(request, response);
+    }
+
+    private void exibirFormularioAtualizacao(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException, SQLException, EntidadeNaoEncontrada {
+
+        String idParam = request.getParameter("id");
+        if (idParam == null || idParam.trim().isEmpty()) {
+            throw new ServletException("ID não informado para exibir formulário de atualização");
+        }
+
+        int id = Integer.parseInt(idParam);
+
+        Despesa despesa = despesaDao.pesquisarPorId(id);
+        request.setAttribute("despesa", despesa);
+
+        request.getRequestDispatcher("formAtualizarDespesa.jsp").forward(request, response);
     }
 
     private void handleError(HttpServletRequest request, HttpServletResponse response, Exception e)
             throws ServletException, IOException {
+
         e.printStackTrace();
         request.setAttribute("erro", "Erro: " + e.getMessage());
         try {
