@@ -7,9 +7,16 @@ import jakarta.servlet.http.*;
 
 import java.io.IOException;
 
-@WebServlet("/CadastroServlet")
+@WebServlet("/cadastro")
 public class CadastroServlet extends HttpServlet {
 
+    @Override
+    protected void doGet(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        request.getRequestDispatcher("cadastro.jsp").forward(request, response);
+    }
+
+    @Override
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
@@ -43,10 +50,9 @@ public class CadastroServlet extends HttpServlet {
         session.setAttribute("sucesso", sucesso);
 
         if (sucesso) {
-            response.sendRedirect("outraPagina.jsp");
+            response.sendRedirect("outraPagina.jsp"); // ou página que queira após sucesso
         } else {
             response.sendRedirect("cadastro.jsp");
         }
-
     }
 }
