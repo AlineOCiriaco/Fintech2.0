@@ -72,6 +72,7 @@ public class ReceitasServlet extends HttpServlet {
             req.setAttribute("mensagemErro", "Erro ao listar receitas: " + e.getMessage());
         }
 
+
         req.getRequestDispatcher("/Receitas.jsp").forward(req, resp);
     }
 }
