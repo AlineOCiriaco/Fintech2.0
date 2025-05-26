@@ -23,6 +23,7 @@ public class AuthenticationFilter implements Filter {
         boolean isPublicPage = path.equals("/login") ||
                 path.equals("/login.jsp") ||
                 path.equals("/cadastro") ||
+                path.equals("/cadastrar") ||
                 path.equals("/cadastro.jsp") ||
                 path.equals("/CadastroServlet") ||
                 path.startsWith("/resources/") ||
